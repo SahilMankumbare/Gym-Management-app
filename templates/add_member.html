@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Add Member - gymbroch{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Onboarding</div>
+    <h2>Add New Member</h2>
+    <p>Register a member and start their subscription cycle</p>
+  </div>
+</div>
+
+<div class="grid split-sm">
+  <div class="card">
+    <form class="styled" method="post" id="memberForm">
+      <div class="form-grid">
+        <div>
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Ravi Sharma" required>
+        </div>
+        <div>
+          <label for="phone">WhatsApp Number *</label>
+          <input type="tel" id="phone" name="phone" placeholder="10-digit number"
+                 pattern="[0-9+\s-]{10,15}" required>
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="optional">
+        </div>
+        <div>
+          <label for="plan">Plan</label>
+          <select id="plan" name="plan">
+            {% for name, info in plans.items() %}
+            <option value="{{ name }}" data-price="{{ info.price }}" data-days="{{ info.days }}"
+                    {{ 'selected' if name == default_plan }}>
+              {{ name }} &mdash; &#8377;{{ "{:,.0f}".format(info.price) }} / {{ info.days }} days
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="start_date">Start Date</label>
+          <div class="date-field">
+            <input type="date" id="start_date" name="start_date" value="{{ today.isoformat() }}" required>
+            <button type="button" class="date-btn" data-target="start_date" aria-label="Open calendar" title="Pick a date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label for="list_price">Plan Price (&#8377;)</label>
+          <input type="number" id="list_price" value="{{ plans[default_plan].price }}" readonly
+                 style="background:#0a0a0d; color:var(--muted); cursor:not-allowed;">
+        </div>
+        <div>
+          <label for="discount_mode">Discount Type</label>
+          <select id="discount_mode" name="discount_mode">
+            <option value="amount">Amount (&#8377;)</option>
+            <option value="percent">Percent (%)</option>
+          </select>
+        </div>
+        <div>
+          <label for="discount_value">Discount</label>
+          <input type="number" id="discount_value" name="discount_value" value="0" min="0" step="1">
+        </div>
+      </div>
+      <label for="payable">Amount Payable (&#8377;)</label>
+      <input type="number" id="payable" name="amount" value="{{ plans[default_plan].price }}" readonly
+             style="background:#0a0a0d; color:var(--yellow); font-weight:700; cursor:not-allowed;">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="2" placeholder="Optional remarks..."></textarea>
+      <button class="btn" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Save Member
+      </button>
+      <a class="btn ghost" href="{{ url_for('members') }}">Cancel</a>
+    </form>
+  </div>
+
+  <div class="card" style="background:linear-gradient(160deg,#1a1600,#121215); border-color:#3a3200;">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg> Plan Summary</h3>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Selected plan</span><strong id="sumPlan">{{ default_plan }}</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Duration</span><strong id="sumDays">{{ plans[default_plan].days }} days</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Start date</span><strong id="sumStart">{{ today.isoformat() }}</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Expires on</span><strong id="sumEnd">-</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Plan price</span><strong id="sumPrice">-</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Discount</span><strong id="sumDiscount" style="color:var(--green);">-</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; padding:14px 0 4px;">
+      <span style="font-size:13px; font-weight:600;">Payable now</span>
+      <strong id="sumPayable" style="color:var(--yellow); font-size:19px;">-</strong>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-top:14px; line-height:1.7;">
+      A payment record is created automatically and counted into this month's revenue.
+    </p>
+  </div>
+</div>
+
+<script>
+  var plan = document.getElementById('plan');
+  var start = document.getElementById('start_date');
+  var listPrice = document.getElementById('list_price');
+  var dMode = document.getElementById('discount_mode');
+  var dValue = document.getElementById('discount_value');
+  var payable = document.getElementById('payable');
+  var money = function (n) { return '\u20B9' + Number(n).toLocaleString('en-IN'); };
+
+  function updateSummary() {
+    var opt = plan.options[plan.selectedIndex];
+    var price = parseFloat(opt.dataset.price) || 0;
+    var days = parseInt(opt.dataset.days, 10) || 0;
+
+    var raw = Math.max(parseFloat(dValue.value) || 0, 0);
+    var disc = dMode.value === 'percent' ? price * Math.min(raw, 100) / 100 : Math.min(raw, price);
+    disc = Math.min(Math.max(disc, 0), price);
+    var final = Math.max(price - disc, 0);
+
+    listPrice.value = price;
+    payable.value = final;
+
+    document.getElementById('sumPlan').textContent = plan.value;
+    document.getElementById('sumDays').textContent = days + ' days';
+    document.getElementById('sumPrice').textContent = money(price);
+    document.getElementById('sumDiscount').textContent = disc > 0 ? '- ' + money(disc) : money(0);
+    document.getElementById('sumPayable').textContent = money(final);
+
+    var s = new Date((start.value || new Date().toISOString().slice(0, 10)) + 'T00:00:00');
+    var e = new Date(s);
+    e.setDate(e.getDate() + days);
+    var iso = function (d) { return d.toISOString().slice(0, 10); };
+    document.getElementById('sumStart').textContent = iso(s);
+    document.getElementById('sumEnd').textContent = iso(e);
+  }
+
+  plan.addEventListener('change', function () { dValue.value = 0; updateSummary(); });
+  start.addEventListener('change', updateSummary);
+  dMode.addEventListener('change', updateSummary);
+  dValue.addEventListener('input', updateSummary);
+  updateSummary();
+</script>
+{% endblock %}

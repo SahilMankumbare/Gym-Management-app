@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Payments - gymbroch{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Ledger</div>
+    <h2>Payments</h2>
+    <p>All collections recorded from new members &amp; renewals</p>
+  </div>
+</div>
+
+<div class="grid cards" style="margin-bottom:16px;">
+  <div class="card stat">
+    <div class="top">
+      <div class="lbl">Total Collected</div>
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13l6 8 6-8"/></svg></div>
+    </div>
+    <div class="val"><em>&#8377;</em>{{ "{:,.0f}".format(total) }}</div>
+    <div class="sub">{{ payments|length }} transaction(s) recorded</div>
+  </div>
+</div>
+
+<div class="card">
+  {% if payments %}
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Paid On</th><th>Member</th><th>Plan</th><th style="text-align:right;">List</th><th style="text-align:right;">Discount</th><th style="text-align:right;">Paid</th></tr></thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p['paid_on'] }}</td>
+        <td style="color:#fff; font-weight:600;">{{ p['member_name'] }}</td>
+        <td>{{ p['plan'] }}</td>
+        <td style="text-align:right; color:var(--muted);">&#8377;{{ "{:,.0f}".format(p['list_amount']) }}</td>
+        <td style="text-align:right; color:var(--green);">{% if p['discount'] %}- &#8377;{{ "{:,.0f}".format(p['discount']) }}{% else %}&mdash;{% endif %}</td>
+        <td style="text-align:right; font-weight:700; color:var(--yellow);">&#8377;{{ "{:,.0f}".format(p['amount']) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty">No payments recorded yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

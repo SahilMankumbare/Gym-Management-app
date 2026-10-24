@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Trainers - gymbroch{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Team</div>
+    <h2>Trainers</h2>
+    <p>Add, manage and track your coaching team</p>
+  </div>
+  <a href="{{ url_for('attendance') }}" class="btn ghost">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+    Mark Attendance
+  </a>
+</div>
+
+<div class="grid split-sm" style="margin-bottom:16px;">
+  <div class="card">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Add Trainer</h3>
+    </div>
+    <form class="styled" method="post">
+      <div class="form-grid">
+        <div>
+          <label for="tname">Full Name *</label>
+          <input type="text" id="tname" name="name" placeholder="e.g. Coach Vikram" required>
+        </div>
+        <div>
+          <label for="tphone">Phone *</label>
+          <input type="tel" id="tphone" name="phone" placeholder="10-digit number" pattern="[0-9+\s-]{10,15}" required>
+        </div>
+        <div>
+          <label for="temail">Email</label>
+          <input type="email" id="temail" name="email" placeholder="optional">
+        </div>
+        <div>
+          <label for="trole">Role</label>
+          <input type="text" id="trole" name="role" placeholder="e.g. Strength Coach" value="Trainer">
+        </div>
+        <div>
+          <label for="tsalary">Monthly Salary (&#8377;)</label>
+          <input type="number" id="tsalary" name="salary" value="0" min="0" step="100">
+        </div>
+        <div>
+          <label for="tjoined">Joining Date</label>
+          <div class="date-field">
+            <input type="date" id="tjoined" name="joined_on" value="{{ today.isoformat() }}" required>
+            <button type="button" class="date-btn" data-target="tjoined" aria-label="Pick joining date" title="Pick a date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button class="btn" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Save Trainer
+      </button>
+    </form>
+  </div>
+
+  <div class="card" style="background:linear-gradient(160deg,#1a1600,#121215); border-color:#3a3200;">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l6-6a2.1 2.1 0 0 1 3 3l-6 6M7 13l-2 2a2.8 2.8 0 0 0 4 4l2-2"/></svg> Quick Info</h3>
+    </div>
+    <p style="font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:14px;">
+      Track every trainer's daily presence from the <b style="color:#fff;">Attendance</b> page.
+      After 30 days of marking attendance, the list below and exported reports show each
+      trainer's attendance percentage automatically.
+    </p>
+    <div style="display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+      <span style="color:var(--muted); font-size:13px;">Total trainers</span>
+      <strong>{{ trainers|length }}</strong>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="panel-title">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg> All Trainers</h3>
+    <span style="font-size:12px; color:var(--muted);">attendance % = last 30 days</span>
+  </div>
+  {% if trainers %}
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Trainer</th><th>Role</th><th>Salary</th><th>Joined</th><th>Attendance</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+    <tbody>
+      {% for t in trainers %}
+      <tr>
+        <td>
+          <div class="who">
+            <div class="avatar">{{ t['name'][0]|upper }}</div>
+            <div><div class="n">{{ t['name'] }}</div><div class="p">+{{ t['phone'] }}{% if t['email'] %} &middot; {{ t['email'] }}{% endif %}</div></div>
+          </div>
+        </td>
+        <td>{{ t['role'] }}</td>
+        <td>&#8377;{{ "{:,.0f}".format(t['salary']) }}</td>
+        <td>{{ t['joined_on'] }}</td>
+        <td>
+          {% if t['marked'] %}
+            <strong style="color:var(--yellow);">{{ t['pct'] }}%</strong>
+            <span style="font-size:11.5px; color:var(--muted);">({{ t['present'] }}/{{ t['marked'] }} days)</span>
+          {% else %}
+            <span style="color:var(--muted);">&mdash;</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="pill {{ 'active' if t['active'] else 'expired' }}">{{ 'Active' if t['active'] else 'Inactive' }}</span>
+        </td>
+        <td>
+          <div class="row-actions" style="justify-content:flex-end;">
+            <form method="post" action="{{ url_for('toggle_trainer', tid=t['id']) }}">
+              <button class="btn ghost sm" type="submit" title="{{ 'Deactivate' if t['active'] else 'Activate' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('delete_trainer', tid=t['id']) }}"
+                  onsubmit="return confirm('Delete {{ t['name'] }} and their attendance records?');">
+              <button class="btn danger sm" type="submit" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty">No trainers yet. Add your first coach above &rarr;</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Attendance - gymbroch{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Daily Check-in</div>
+    <h2>Trainer Attendance</h2>
+    <p>Mark presence for each date</p>
+  </div>
+</div>
+
+<div class="grid split-sm" style="margin-bottom:16px;">
+  <div class="card">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg> Mark Attendance</h3>
+    </div>
+    <form method="post" class="styled">
+      <label for="att_date">Date</label>
+      <div class="date-field">
+        <input type="date" id="att_date" name="att_date" value="{{ att_date }}" required>
+        <button type="button" class="date-btn" data-target="att_date" aria-label="Pick a date" title="Pick a date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </button>
+      </div>
+
+      {% if trainers %}
+      {% for t in trainers %}
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; margin-bottom:10px; background:#0e0e11;">
+        <div class="who">
+          <div class="avatar">{{ t['name'][0]|upper }}</div>
+          <div><div class="n">{{ t['name'] }}</div><div class="p">{{ t['role'] }}</div></div>
+        </div>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
+          <span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+                       color:{{ 'var(--green)' if t['present'] else 'var(--red)' }};">
+            {{ 'Present' if t['present'] else 'Absent' }}
+          </span>
+          <input type="checkbox" name="present_{{ t['id'] }}" value="1"
+                 {{ 'checked' if t['present'] }}
+                 onchange="this.parentElement.querySelector('span').textContent = this.checked ? 'Present' : 'Absent';
+                          this.parentElement.querySelector('span').style.color = this.checked ? 'var(--green)' : 'var(--red)';
+                          this.parentElement.querySelector('span').style.animation='none'; void this.parentElement.querySelector('span').offsetWidth; this.parentElement.querySelector('span').style.animation='pop .2s'"
+                 style="width:20px; height:20px; accent-color:var(--green); cursor:pointer; margin:0;">
+        </label>
+      </div>
+      {% endfor %}
+      <button class="btn" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Save for {{ att_date }}
+      </button>
+      {% else %}
+      <div class="empty">No active trainers. <a href="{{ url_for('trainers') }}">Add a trainer first &rarr;</a></div>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="7" width="3" height="11"/><rect x="17" y="10" width="3" height="8"/></svg> Last 30 Days</h3>
+      <span style="font-size:12px; color:var(--muted);">since {{ cutoff }}</span>
+    </div>
+    {% if history %}
+    {% for h in history %}
+    <div style="margin-bottom:15px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:7px;">
+        <span style="color:#fff; font-weight:600;">{{ h['name'] }}</span>
+        <span style="color:var(--muted);">{{ h['present'] }}/{{ h['marked'] }} days</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill"
+        style="width: {{ (h['present'] / h['marked'] * 100)|round(0) if h['marked'] else 0 }}%;
+               background: {{ 'var(--green)' if h['marked'] and h['present'] / h['marked'] >= 0.8 else 'var(--yellow)' }};"></div></div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty">No attendance marked yet for the last 30 days.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

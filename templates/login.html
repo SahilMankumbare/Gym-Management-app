@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - gymbroch</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh; display: grid; place-items: center;
+      background: #08080a; color: #f4f4f5;
+      background-image:
+        radial-gradient(600px 300px at 20% 0%, rgba(255,212,0,.06), transparent),
+        radial-gradient(500px 400px at 90% 100%, rgba(255,212,0,.05), transparent);
+    }
+    .card {
+      width: min(400px, 92vw); background: #121215;
+      border: 1px solid #26262e; border-radius: 16px; padding: 36px 32px;
+      box-shadow: 0 24px 60px -30px rgba(0,0,0,.8);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .mark {
+      width: 44px; height: 44px; border-radius: 11px; background: #ffd400;
+      display: grid; place-items: center; color: #000;
+    }
+    .mark svg { width: 24px; height: 24px; }
+    .logo h1 { font-size: 20px; font-weight: 800; letter-spacing: 2.5px; }
+    .logo span { display: block; font-size: 10px; color: #8a8a94; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; }
+    .eyebrow { font-size: 10.5px; text-transform: uppercase; letter-spacing: 2px; color: #ffd400; font-weight: 700; margin-bottom: 6px; }
+    h2 { font-size: 22px; margin-bottom: 4px; }
+    p.sub { color: #8a8a94; font-size: 13px; margin-bottom: 24px; }
+    label { display: block; font-size: 11.5px; font-weight: 700; margin-bottom: 7px; color: #a1a1aa; text-transform: uppercase; letter-spacing: .8px; }
+    input {
+      width: 100%; padding: 12px 14px; border: 1px solid #26262e;
+      border-radius: 9px; font-size: 14px; font-family: inherit; background: #0e0e11;
+      color: #f4f4f5; margin-bottom: 18px; outline: none; transition: .15s;
+    }
+    input:focus { border-color: #ffd400; box-shadow: 0 0 0 3px rgba(255,212,0,.13); }
+    .btn {
+      width: 100%; padding: 13px; border: none; border-radius: 9px; cursor: pointer;
+      background: #ffd400; color: #000; font-size: 14.5px; font-weight: 800;
+      letter-spacing: .3px; transition: .15s;
+    }
+    .btn:hover { background: #ffe14d; }
+    .flash { padding: 11px 14px; border-radius: 9px; margin-bottom: 16px; font-size: 13.5px; font-weight: 600; }
+    .flash.error { background: rgba(248,113,113,.1); color: #f87171; border: 1px solid rgba(248,113,113,.28); }
+    .hint { margin-top: 18px; text-align: center; font-size: 12px; color: #55555f; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>
+        </svg>
+      </div>
+      <div><h1>gymbroch</h1><span>Gym System</span></div>
+    </div>
+    <div class="eyebrow">Admin Access</div>
+    <h2>Sign in</h2>
+    <p class="sub">Manage members, trainers, revenue and reports.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Admin" autofocus required>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" required>
+      <button class="btn" type="submit">Login &rarr;</button>
+    </form>
+    <div class="hint">gymbroch &middot; owner dashboard</div>
+  </div>
+</body>
+</html>

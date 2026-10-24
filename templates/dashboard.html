@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - gymbroch{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Overview</div>
+    <h2>Dashboard</h2>
+    <p>{{ month_label }} &middot; {{ today.strftime('%A, %d %b %Y') }}</p>
+  </div>
+  <a href="{{ url_for('add_member') }}" class="btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    Add New Member
+  </a>
+</div>
+
+<div class="grid cards" style="margin-bottom:16px;">
+  <div class="card stat">
+    <div class="top">
+      <div class="lbl">Total Members</div>
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+    </div>
+    <div class="val">{{ total_members }}</div>
+    <div class="sub">{{ active }} active right now</div>
+  </div>
+  <div class="card stat">
+    <div class="top">
+      <div class="lbl">Revenue This Month</div>
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13l6 8 6-8"/></svg></div>
+    </div>
+    <div class="val"><em>&#8377;</em>{{ "{:,.0f}".format(month_revenue) }}</div>
+    <div class="sub">{{ month_payments|length }} payment(s) in {{ month_label }}</div>
+  </div>
+  <div class="card stat">
+    <div class="top">
+      <div class="lbl">Expiring Soon</div>
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    </div>
+    <div class="val">{{ expiring_count }}</div>
+    <div class="sub">within the next 7 days</div>
+  </div>
+  <div class="card stat">
+    <div class="top">
+      <div class="lbl">Expired</div>
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
+    </div>
+    <div class="val">{{ expired }}</div>
+    <div class="sub">need renewal follow-up</div>
+  </div>
+</div>
+
+<div class="grid split">
+  <div class="card">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Subscription Cycle Alerts</h3>
+      <a href="{{ url_for('members', status='Expiring Soon') }}">View all &rarr;</a>
+    </div>
+    {% if expiring %}
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Member</th><th>Plan</th><th>Expires</th><th>Left</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for m in expiring %}
+        <tr>
+          <td>
+            <div class="who">
+              <div class="avatar">{{ m['name'][0]|upper }}</div>
+              <div><div class="n">{{ m['name'] }}</div><div class="p">+{{ m['phone'] }}</div></div>
+            </div>
+          </td>
+          <td>{{ m['plan'] }}</td>
+          <td>{{ m['end_date'] }}</td>
+          <td><span class="pill soon">{{ days_left(m['end_date']) }}d</span></td>
+          <td style="text-align:right;">
+            <a class="btn wa sm" target="_blank"
+               href="{{ whatsapp_link(m['phone'], 'Hi ' ~ m['name'] ~ ', your gymbroch membership expires on ' ~ m['end_date'] ~ '. Renew now to keep training!') }}">
+               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1s-.7 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5s0-.4 0-.5c-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2z"/></svg>
+               Message
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty">No subscriptions expiring in the next 7 days.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="panel-title">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="13" y="6" width="3" height="11"/></svg> Plan Mix</h3>
+      <a href="{{ url_for('analytics') }}">Analytics &rarr;</a>
+    </div>
+    {% set total_plan = plan_rows|sum(attribute='c') or 1 %}
+    {% for p in plan_rows %}
+    <div style="margin-bottom:15px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:7px;">
+        <span style="color:#fff; font-weight:600;">{{ p['plan'] }}</span>
+        <span style="color:var(--muted);">{{ p['c'] }} &middot; &#8377;{{ "{:,.0f}".format(p['rev']) }}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width: {{ (p['c'] / total_plan * 100)|round(0) }}%;"></div></div>
+    </div>
+    {% else %}
+    <div class="empty">No members yet.</div>
+    {% endfor %}
+    <div class="sep" style="margin-top:10px; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12.5px; color:var(--muted);">Total revenue &middot; all time</span>
+      <strong style="font-size:16px;">&#8377;{{ "{:,.0f}".format(total_revenue) }}</strong>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+  <div class="panel-title">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Recently Added Members</h3>
+    <a href="{{ url_for('members') }}">View all &rarr;</a>
+  </div>
+  {% if recent %}
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for m in recent %}
+      <tr>
+        <td>
+          <div class="who">
+            <div class="avatar">{{ m['name'][0]|upper }}</div>
+            <div><div class="n">{{ m['name'] }}</div><div class="p">{{ m['email'] or ('+' ~ m['phone']) }}</div></div>
+          </div>
+        </td>
+        <td>{{ m['plan'] }}</td>
+        <td>{{ m['start_date'] }}</td>
+        <td>
+          {% set st = member_status(m['end_date']) %}
+          <span class="pill {{ 'active' if st == 'Active' else 'soon' if st == 'Expiring Soon' else 'expired' }}">{{ st }}</span>
+        </td>
+        <td style="text-align:right;">
+          <a class="btn wa sm" target="_blank"
+             href="{{ whatsapp_link(m['phone'], 'Hi ' ~ m['name'] ~ ', welcome to gymbroch! Your ' ~ m['plan'] ~ ' plan is active till ' ~ m['end_date'] ~ '.') }}">
+             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1s-.7 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5s0-.4 0-.5c-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2z"/></svg>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty">No members yet. <a href="{{ url_for('add_member') }}">Add your first member &rarr;</a></div>
+  {% endif %}
+</div>
+{% endblock %}
